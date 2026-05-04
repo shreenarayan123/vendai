@@ -1,5 +1,5 @@
 export const dynamic = 'force-dynamic';
-export const dynamic = 'force-dynamic';
+
 import { getCurrentUser } from "@/actions/auth";
 import { onGetAllCampaigns, onGetAllCustomers } from "@/actions/mail";
 import EmailMarketing from "@/components/email-marketing";

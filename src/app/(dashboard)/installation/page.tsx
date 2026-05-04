@@ -1,12 +1,11 @@
 export const dynamic = 'force-dynamic';
-export const dynamic = 'force-dynamic';
 
 import InfoBar from "@/components/infobar";
 import React, { Suspense } from "react";
-import dynamic from "next/dynamic";
+import nextDynamic from "next/dynamic";
 import { SkeletonCard } from "@/components/installation/Skeleton";
 
-const Installation = dynamic(()=> import("@/components/installation"), {suspense:true});
+const Installation = nextDynamic(()=> import("@/components/installation"), {suspense:true});
 
 const page = () => {
   return (

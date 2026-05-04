@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+
 import AiChatBot from "@/components/chatbot";
 import React, { Suspense } from "react";
 
