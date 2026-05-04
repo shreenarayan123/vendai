@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 
 import SignInFormProvider from "@/components/forms/sign-in/form-provider";
 import LoginForm from "@/components/forms/sign-in/login-form";

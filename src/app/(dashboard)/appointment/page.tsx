@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 import { onGetAllBookingsForCurrentUser } from "@/actions/appointment";
 import { getCurrentUser } from "@/actions/auth";
 import AllAppointments from "@/components/appointment/all-appointment";
@@ -7,6 +9,8 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import React from "react";
+
+export const dynamic = 'force-dynamic';
 
 const Page = async () => {
   const user = await getCurrentUser();

@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 "use client";
 import ButtonHandlers from "@/components/forms/sign-up/button-handlers";
 import SignUpFormProvider from "@/components/forms/sign-up/form-provider";

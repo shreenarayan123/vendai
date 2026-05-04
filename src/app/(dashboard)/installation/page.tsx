@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+export const dynamic = 'force-dynamic';
 
 import InfoBar from "@/components/infobar";
 import React, { Suspense } from "react";
