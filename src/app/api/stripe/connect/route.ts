@@ -1,14 +1,15 @@
 export const dynamic = 'force-dynamic';
-import { getCurrentUser } from "@/actions/auth";
-import { client } from "@/lib/prisma";
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY!, {
-  typescript: true,
-});
 
 export async function GET() {
+  const { getCurrentUser } = await import("@/actions/auth");
+  const { client } = await import("@/lib/prisma");
+  const { NextResponse } = await import("next/server");
+  const Stripe = (await import("stripe")).default;
+
+  const stripe = new Stripe(process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY!, {
+    typescript: true,
+  });
+
   try {
     const user = await getCurrentUser();
     if (!user)
