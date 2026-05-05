@@ -1,21 +1,9 @@
-'use server';
-import { client } from "@/lib/prisma";
-import nodemailer from 'nodemailer';
+"use server";
 
 interface StoreOTPParams {
   email: string;
   otp: string;
   expiryMinutes?: number;
-}
-
-interface EmailConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: {
-    user: string;
-    pass: string;
-  };
 }
 
 interface OTPResult {
@@ -24,39 +12,41 @@ interface OTPResult {
   message: string;
 }
 
-const emailConfig: EmailConfig = {
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true, // true for 465, false for other ports
-  auth: {
-    user: process.env.NODE_MAILER_EMAIL!, // Your email
-    pass: process.env.NODE_MAILER_GMAIL_APP_PASSWORD!, // Your app password
-  },
-};
- console.log('Email Config:', emailConfig);
-// Create transporter
-const transporter = nodemailer.createTransport(emailConfig);
-
-
 export async function prepareEmailAddressVerification(email: string): Promise<OTPResult> {
   try {
+    const { client } = await import("@/lib/prisma");
+    const nodemailer = (await import("nodemailer")).default;
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       return {
         success: false,
-        message: 'Invalid email format',
+        message: "Invalid email format",
       };
     }
 
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
+    // Email config and transporter created inside function (server-only)
+    const emailConfig = {
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.NODE_MAILER_EMAIL,
+        pass: process.env.NODE_MAILER_GMAIL_APP_PASSWORD,
+      },
+    };
+
+    const transporter = nodemailer.createTransport(emailConfig as any);
+
     // Email content
     const mailOptions = {
       from: process.env.NODE_MAILER_EMAIL,
       to: email,
-      subject: 'Email Verification - OTP Code',
+      subject: "Email Verification - OTP Code",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <h2 style="color: #333; text-align: center;">Email Verification</h2>
@@ -75,71 +65,67 @@ export async function prepareEmailAddressVerification(email: string): Promise<OT
     };
 
     // Send email
-    await transporter.sendMail(mailOptions);
-   await storeOTP({ email, otp, expiryMinutes: 10 });
+    await transporter.sendMail(mailOptions as any);
+    await storeOTP({ email, otp, expiryMinutes: 10, client });
+
     return {
       success: true,
-      otp: otp, // You'll want to store this in your database with expiry
-      message: 'OTP sent successfully',
+      otp: otp,
+      message: "OTP sent successfully",
     };
-
   } catch (error) {
-    console.error('Error sending OTP email:', error);
+    console.error("Error sending OTP email:", error);
     return {
       success: false,
-      message: 'Failed to send OTP email',
+      message: "Failed to send OTP email",
     };
   }
 }
 
- async function storeOTP({ email, otp, expiryMinutes = 10 }: StoreOTPParams) {
+async function storeOTP({ email, otp, expiryMinutes = 10, client }: StoreOTPParams & { client?: any }) {
+  const { client: _client } = client ? { client } : await import("@/lib/prisma");
   const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
-  
+
   // Delete any existing OTPs for this email first
-  await client.otpCode.deleteMany({ where: { email } });
-  
+  await _client.otpCode.deleteMany({ where: { email } });
+
   // Store new OTP
-  return await client.otpCode.create({
+  return await _client.otpCode.create({
     data: {
       email,
       otpCode: otp,
       expiresAt,
-    }
+    },
   });
 }
 
 export async function verifyOTP(email: string, inputOTP: string): Promise<boolean> {
-  console.log('Verifying OTP start:', email, 'with input:', inputOTP);
   try {
-    console.log('Fetching OTP record for email:', email);
+    const { client } = await import("@/lib/prisma");
     const record = await client.otpCode.findFirst({
-    where: {
-      email,
-      otpCode: inputOTP,
-      used: false,
-      expiresAt: { gt: new Date() }
-    }
-  });
-  console.log('OTP record found:', record);
-  if (record) {
-    // Mark as used
-    console.log('OTP is valid, marking as used');
-    await client.otpCode.update({
-      where: { id: record.id },
-      data: { used: true }
+      where: {
+        email,
+        otpCode: inputOTP,
+        used: false,
+        expiresAt: { gt: new Date() },
+      },
     });
-    return true;
-  }
+    if (record) {
+      await client.otpCode.update({
+        where: { id: record.id },
+        data: { used: true },
+      });
+      return true;
+    }
   } catch (error) {
-    console.error('Error verifying OTP:', error);
+    console.error("Error verifying OTP:", error);
     return false;
-    
   }
-  
+
   return false;
 }
+
 export async function cleanupExpiredOTPs() {
-  await client.otpCode.deleteMany({
-    where: { expiresAt: { lt: new Date() } }
-  });
+  const { client } = await import("@/lib/prisma");
+  await client.otpCode.deleteMany({ where: { expiresAt: { lt: new Date() } } });
 }
