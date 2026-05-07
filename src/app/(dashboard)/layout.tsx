@@ -11,12 +11,12 @@ type Props = {
 
 const layout = async ({children}: Props) => {
   const authenticated = await onAutoLogin()
-  if(!authenticated) return null
+  if (!authenticated?.user) return null
  
   return (
     <ChatProvider>
     <div className="flex h-screen w-full  hide-scrollbar overflow-hidden">
-      <SideBar domains={authenticated.domains} />
+      <SideBar domains={authenticated.domains ?? []} />
       <div className="w-full border-l-[1px] border-gray-300 h-screen flex flex-col  pt-5">
         {children}
       </div>

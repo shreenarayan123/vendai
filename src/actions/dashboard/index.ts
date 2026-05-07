@@ -1,11 +1,11 @@
 "use server";
-import { client } from "@/lib/prisma";
 import { getCurrentUser } from "../auth";
 
 export const getUserClients = async () => {
   try {
     const user = await getCurrentUser();
     if (user) {
+      const { client } = await import("@/lib/prisma");
       const clients = await client.customer.count({
         where: {
           Domain: {
@@ -28,6 +28,7 @@ export const getUserPlanInfo = async () => {
   try {
     const user = await getCurrentUser();
     if (user) {
+      const { client } = await import("@/lib/prisma");
       const plan = await client.user.findUnique({
         where: {
           email: user.email,

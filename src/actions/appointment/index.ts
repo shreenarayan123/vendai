@@ -1,12 +1,12 @@
 "use server";
 
-import { client } from "@/lib/prisma";
 import { getCurrentUser } from "../auth";
 
 export const getUserAppointments = async () => {
   try {
     const user = await getCurrentUser();
     if (user) {
+      const { client } = await import("@/lib/prisma");
       const bookings = await client.bookings.count({
         where: {
           Customer: {
@@ -29,6 +29,7 @@ export const getUserAppointments = async () => {
 
 export const onDomainCustomerResponse = async (customerId: string) => {
   try {
+    const { client } = await import("@/lib/prisma");
     const customerQuestions = await client.customer.findUnique({
       where: {
         id: customerId,
@@ -54,6 +55,7 @@ export const onDomainCustomerResponse = async (customerId: string) => {
 
 export const onGetAllDomainBookings = async (domainId: string) => {
   try {
+    const { client } = await import("@/lib/prisma");
     const domainBookings = await client.bookings.findMany({
       where: {
         domainId,
@@ -81,6 +83,7 @@ export const onBookNewAppointment = async (
   try {
     console.log("Creating booking");
     console.log(domainId, customerId, slot, date, email, "booking data");
+    const { client } = await import("@/lib/prisma");
     const newBooking = await client.customer.update({
       where: {
         id: customerId,
@@ -110,6 +113,7 @@ export const saveAnswers = async (
   customerId: string
 ) => {
   try {
+    const { client } = await import("@/lib/prisma");
     for (const question in questions) {
       await client.customer.update({
         where: { id: customerId },
@@ -138,6 +142,7 @@ export const saveAnswers = async (
 
 export const onGetAllBookingsForCurrentUser = async (email: string) => {
   try {
+    const { client } = await import("@/lib/prisma");
     const bookings = await client.bookings.findMany({
       where: {
         Customer: {
